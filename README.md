@@ -57,3 +57,16 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+
+# 🚀 StarTrix — A Tetris-style Game Built with Angular 20
+
+Welcome to **StarTrix**, a fully playable, responsive, and API-ready game using Angular 20 standalone components, strict TypeScript, and modern best practices.
+
+---
+
+## 🔧 Quick Start
+
+1. **Install dependencies**
+   ```bash
+   npm install
