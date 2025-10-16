@@ -1,0 +1,21 @@
+<h2 class="title">Guardar puntuación</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="score-form">
+  <mat-form-field appearance="fill" class="full">
+    <mat-label>Nombre del jugador</mat-label>
+    <input matInput formControlName="displayName" autocomplete="name" required />
+    <mat-error *ngIf="form.controls['displayName'].hasError('required')">
+      Este campo es obligatorio
+    </mat-error>
+    <mat-error *ngIf="form.controls['displayName'].hasError('minlength')">
+      Debe tener al menos 2 caracteres
+    </mat-error>
+  </mat-form-field>
+
+  <div class="actions">
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+      Guardar
+    </button>
+  </div>
+</form>

@@ -1,0 +1,21 @@
+.hud { display: grid; gap: 14px; }
+
+.stats { display: grid; grid-auto-flow: column; gap: 16px; }
+.stat label { color: #9aa4b2; font-size: 12px; display: block; }
+.stat b { font-size: 18px; }
+
+.notice {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #ffd400;
+  background: #2a2a12; border: 1px solid #4d4a15; padding: 8px; border-radius: 8px;
+}
+.notice .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd400; }
+
+.next p { margin: 0 0 6px; color: #9aa4b2; }
+.preview {
+  width: 200px; height: 200px; border: 1px solid #2a3142; border-radius: 8px;
+  display: grid; place-items: center; background: #0f1115; overflow: hidden;
+}
+.preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+.btn-close { width: 100%; }

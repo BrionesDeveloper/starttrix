@@ -1,6 +1,6 @@
 export interface ScoreEntryDto {
   id?: string;
-  displayName: string;
+  name: string;
   score: number;
   createdAt?: string;
 }

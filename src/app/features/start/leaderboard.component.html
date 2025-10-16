@@ -1,0 +1,16 @@
+<h2>Top 10</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th class="right">Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let entry of top10; trackBy: trackByName">
+      <td>{{ entry.name }}</td>
+      <td class="right">{{ entry.score }}</td>
+    </tr>
+  </tbody>
+</table>

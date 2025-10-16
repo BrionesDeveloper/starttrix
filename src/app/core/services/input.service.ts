@@ -1,56 +1,33 @@
-import { Injectable } from '@angular/core';
-import { fromEvent, merge, Subject } from 'rxjs';
+import { Injectable, NgZone, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Subject, fromEvent } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { GameInput } from '../models/game.model';
 
 @Injectable({ providedIn: 'root' })
 export class InputService {
-  private input$ = new Subject<GameInput>();
+  readonly inputs$ = new Subject<GameInput>();
+  private platformId = inject(PLATFORM_ID);
 
-  constructor() {
-    this.listenKeyboard();
-    this.listenTouch();
-  }
+  constructor(zone: NgZone) {
+    if (!isPlatformBrowser(this.platformId)) return;
 
-  get inputs$() {
-    return this.input$.asObservable();
-  }
-
-  private listenKeyboard() {
-    fromEvent<KeyboardEvent>(window, 'keydown').pipe(
-      map(e => {
-        switch (e.code) {
-          case 'ArrowLeft': return GameInput.Left;
-          case 'ArrowRight': return GameInput.Right;
-          case 'ArrowDown': return GameInput.Down;
-          case 'Space': return GameInput.HardDrop;
-          case 'KeyR': return GameInput.Rotate;
-          default: return null;
-        }
-      }),
-      filter((v): v is GameInput => v !== null)
-    ).subscribe(input => this.input$.next(input));
-  }
-
-  private listenTouch() {
-    let startX = 0, startY = 0;
-    fromEvent<TouchEvent>(window, 'touchstart').subscribe(e => {
-      const t = e.touches[0];
-      startX = t.clientX;
-      startY = t.clientY;
-    });
-    fromEvent<TouchEvent>(window, 'touchend').subscribe(e => {
-      const t = e.changedTouches[0];
-      const dx = t.clientX - startX;
-      const dy = t.clientY - startY;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        this.input$.next(dx > 0 ? GameInput.Right : GameInput.Left);
-      } else if (Math.abs(dy) > 30) {
-        this.input$.next(GameInput.Down);
-      } else {
-        this.input$.next(GameInput.Rotate);
-      }
+    zone.runOutsideAngular(() => {
+      fromEvent<KeyboardEvent>(window, 'keydown')
+        .pipe(
+          map(ev => {
+            switch (ev.key) {
+              case 'ArrowLeft':  return GameInput.Left;
+              case 'ArrowRight': return GameInput.Right;
+              case 'ArrowDown':  return GameInput.Down;
+              case 'ArrowUp':    return GameInput.Rotate;
+              case ' ':          return GameInput.HardDrop;
+              default:           return null;
+            }
+          }),
+          filter((x): x is GameInput => x !== null)
+        )
+        .subscribe(input => this.inputs$.next(input));
     });
   }
 }

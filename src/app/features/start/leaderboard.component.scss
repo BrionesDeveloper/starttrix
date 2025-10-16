@@ -1,0 +1,42 @@
+h2 {
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0f1115;
+  border: 1px solid #202531;
+  border-radius: 8px;
+  overflow: hidden;
+
+  thead {
+    background: #131824;
+  }
+
+  th, td {
+    padding: 10px 12px;
+  }
+
+  th {
+    text-align: left;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  td {
+    border-top: 1px solid #1a2030;
+  }
+
+  .right {
+    text-align: right;
+  }
+}
+
+@media (max-width: 600px) {
+  .table th:nth-child(2),
+  .table td:nth-child(2) {
+    width: 40%;
+  }
+}

@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:5000',
-  useRealScoresApi: false,
+  apiBaseUrl: 'https://localhost:7298',
+  useRealScoresApi: true
 };

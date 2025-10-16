@@ -1,61 +1,74 @@
 import { GameBoard, GamePiece, Position } from '../models/game.model';
 
-export function rotate(matrix: boolean[][]): boolean[][] {
-  const N = matrix.length;
-  return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
-}
-
+/** Verifica si la pieza colisiona con bordes o celdas ocupadas, en la posición dada */
 export function collides(board: GameBoard, piece: GamePiece, pos: Position): boolean {
-  const { shape } = piece;
+  const shape = piece.shape;
+  const rows = board.length;
+  const cols = board[0]?.length ?? 0;
+
   for (let y = 0; y < shape.length; y++) {
-    for (let x = 0; x < shape[y].length; x++) {
+    for (let x = 0; x < shape[0].length; x++) {
       if (!shape[y][x]) continue;
 
-      const boardX = pos.x + x;
-      const boardY = pos.y + y;
+      const bx = pos.x + x;
+      const by = pos.y + y;
 
-      if (
-        boardX < 0 || boardX >= board[0].length ||
-        boardY < 0 || boardY >= board.length ||
-        board[boardY][boardX].occupied
-      ) {
-        return true;
-      }
+      // Fuera de límites inferior o laterales
+      if (bx < 0 || bx >= cols || by >= rows) return true;
+
+      // Por arriba del tablero (by < 0) se permite (spawn), no colisiona salvo cuando mergea
+      if (by >= 0 && board[by][bx]?.occupied) return true;
     }
   }
   return false;
 }
 
+/** Fusiona la pieza en el tablero en la posición indicada (no valida colisiones) */
 export function merge(board: GameBoard, piece: GamePiece, pos: Position): GameBoard {
-  const newBoard = board.map(row => row.map(cell => ({ ...cell })));
-  const { shape, product } = piece;
+  const next = board.map(row => row.map(c => ({ ...c })));
 
-  for (let y = 0; y < shape.length; y++) {
-    for (let x = 0; x < shape[y].length; x++) {
-      if (!shape[y][x]) continue;
+  for (let y = 0; y < piece.shape.length; y++) {
+    for (let x = 0; x < piece.shape[0].length; x++) {
+      if (!piece.shape[y][x]) continue;
 
-      const boardX = pos.x + x;
-      const boardY = pos.y + y;
+      const by = pos.y + y;
+      const bx = pos.x + x;
 
-      if (boardY >= 0 && boardY < board.length && boardX >= 0 && boardX < board[0].length) {
-        newBoard[boardY][boardX] = {
+      if (by >= 0 && by < next.length && bx >= 0 && bx < next[0].length) {
+        next[by][bx] = {
           occupied: true,
-          productId: product.id,
-          imageUrl: product.imageUrl,
+          productId: piece.product.id,
+          imageUrl: piece.product.imageUrl
         };
       }
     }
   }
-
-  return newBoard;
+  return next;
 }
 
+/** Limpia filas completamente llenas (todas occupied = true) y sube filas vacías por arriba */
 export function clearFilledRows(board: GameBoard): GameBoard {
-  const width = board[0].length;
-  const newBoard = board.filter(row => row.some(cell => !cell.occupied));
-  const cleared = board.length - newBoard.length;
-  for (let i = 0; i < cleared; i++) {
-    newBoard.unshift(new Array(width).fill(null).map(() => ({ occupied: false })));
+  const rows = board.length;
+  const cols = board[0]?.length ?? 0;
+
+  const remain: GameBoard = [];
+  let cleared = 0;
+
+  for (let y = 0; y < rows; y++) {
+    const full = board[y].every(c => c.occupied);
+    if (full) {
+      cleared++;
+    } else {
+      remain.push(board[y]);
+    }
   }
-  return newBoard;
+
+  // Agrega filas vacías arriba por cada fila limpiada
+  const emptyRow = (): typeof board[number] =>
+    Array.from({ length: cols }, () => ({ occupied: false }));
+  for (let i = 0; i < cleared; i++) {
+    remain.unshift(emptyRow());
+  }
+
+  return remain;
 }

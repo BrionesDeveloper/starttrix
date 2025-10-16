@@ -7,20 +7,7 @@ import { ScoreEntryDto } from '../../core/models/score.model';
   standalone: true,
   selector: 'app-leaderboard',
   imports: [CommonModule],
-  template: `
-    <h2>Top 10</h2>
-    <table>
-      <thead>
-        <tr><th>Player</th><th>Score</th></tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let entry of top10">
-          <td>{{ entry.displayName }}</td>
-          <td>{{ entry.score }}</td>
-        </tr>
-      </tbody>
-    </table>
-  `,
+  templateUrl: './leaderboard.component.html',
   styleUrls: ['./leaderboard.component.scss']
 })
 export class LeaderboardComponent implements OnInit {
@@ -28,6 +15,8 @@ export class LeaderboardComponent implements OnInit {
   top10: ScoreEntryDto[] = [];
 
   ngOnInit(): void {
-    this.leaderboardService.getTop10().subscribe(data => this.top10 = data);
+    this.leaderboardService.getTop10().subscribe(data => (this.top10 = data));
   }
+
+  trackByName = (_: number, row: ScoreEntryDto) => row.name;
 }

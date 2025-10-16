@@ -1,22 +1,15 @@
 import { InjectionToken } from '@angular/core';
 
-export interface BoxProfile {
-  width: number;
-  height: number;
-}
+export interface BoxProfile { width: number; height: number; }
+export interface PointsProfile { placePiece: number; closeBox: number; fullBoxMultiplier: number; }
 
-export const BOX_PROFILE = new InjectionToken<BoxProfile>('BOX_PROFILE', {
-  factory: () => ({ width: 10, height: 20 }),
-});
+export const BOX_PROFILE   = new InjectionToken<BoxProfile>('BOX_PROFILE');
+export const POINTS        = new InjectionToken<PointsProfile>('POINTS');
+export const TICK_INTERVAL = new InjectionToken<number>('TICK_INTERVAL');
 
-export const TICK_INTERVAL = new InjectionToken<number>('TICK_INTERVAL', {
-  factory: () => 500, // gravity step in ms
-});
 
-export const POINTS = new InjectionToken('POINTS', {
-  factory: () => ({
-    piecePlaced: 10,
-    closeBoxBonus: 50,
-    fullBoardMultiplier: 2,
-  }),
-});
+export const THRESHOLD_ROW = new InjectionToken<number>('THRESHOLD_ROW');
+
+export const AUTOSAVE_MS   = new InjectionToken<number>('AUTOSAVE_MS');
+
+export const GAME_TIME_MS  = new InjectionToken<number>('GAME_TIME_MS');

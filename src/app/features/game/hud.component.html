@@ -1,0 +1,33 @@
+<div class="hud">
+  <div class="stats">
+    <div class="stat">
+      <label>Puntos</label>
+      <b>{{ score }}</b>
+    </div>
+    <div class="stat">
+      <label>Vidas</label>
+      <b>{{ lives }}</b>
+    </div>
+    <div class="stat">
+      <label>Tiempo</label>
+      <b>{{ timeLeftLabel }}</b>
+    </div>
+  </div>
+
+  <div class="notice">
+    <span class="dot"></span>
+    No superes la línea amarilla; si cierras con piezas arriba, pierdes 1 vida y no suma.
+  </div>
+
+  <div class="next">
+    <p>Próximo:</p>
+    <div class="preview" *ngIf="nextPiece">
+      <img [src]="nextPiece.product.imageUrl" alt="Próxima pieza" />
+    </div>
+  </div>
+
+  <button mat-stroked-button color="warn" class="btn-close"
+          [disabled]="!canClose" (click)="closeBox.emit()">
+    Cerrar caja
+  </button>
+</div>

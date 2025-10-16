@@ -1,10 +1,11 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
 
 export const httpApiUrlInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.startsWith('http') && !req.url.startsWith('/assets/')) {
-    const url = `${environment.apiBaseUrl}${req.url}`;
-    req = req.clone({ url });
-  }
+  // Absoluta => no tocar
+  if (/^https?:\/\//i.test(req.url)) return next(req);
+  // /api/... => deja que lo resuelva el proxy
+  if (req.url.startsWith('/api')) return next(req);
+
+  // Para otras rutas internas podrías anteponer base si lo necesitas
   return next(req);
 };

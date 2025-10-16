@@ -7,26 +7,23 @@ import { MatButtonModule } from '@angular/material/button';
   standalone: true,
   selector: 'app-hud',
   imports: [CommonModule, MatButtonModule],
-  template: `
-    <div class="hud">
-      <div class="stats">
-        <div>Score: {{ score }}</div>
-        <div>Lives: {{ lives }}</div>
-      </div>
-      <div class="next">
-        <p>Next:</p>
-        <div class="preview" *ngIf="nextPiece">
-          <img [src]="nextPiece.product.imageUrl" alt="Next Piece" />
-        </div>
-      </div>
-      <button mat-stroked-button color="warn" (click)="closeBox.emit()">Close Box</button>
-    </div>
-  `,
+  templateUrl: './hud.component.html',
   styleUrls: ['./hud.component.scss']
 })
 export class HUDComponent {
   @Input() score = 0;
   @Input() lives = 3;
   @Input() nextPiece: GamePiece | null = null;
+
+  @Input() timeLeftMs = 0;        // << nuevo
+  @Input() canClose = false;      // << nuevo
+
   @Output() closeBox = new EventEmitter<void>();
+
+  get timeLeftLabel(): string {
+    const s = Math.max(0, Math.floor(this.timeLeftMs / 1000));
+    const m = Math.floor(s / 60).toString().padStart(2, '0');
+    const ss = (s % 60).toString().padStart(2, '0');
+    return `${m}:${ss}`;
+  }
 }

@@ -1,5 +1,5 @@
 export const environment = {
-  production: true,
-  apiBaseUrl: 'https://api.starttrix.io',
-  useRealScoresApi: true,
+  production: false,
+  apiBaseUrl: 'https://localhost:7298',
+  useRealScoresApi: true
 };

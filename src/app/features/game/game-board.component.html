@@ -1,0 +1,35 @@
+<div class="game-page">
+  <div class="board-wrapper">
+    <div
+      class="board"
+      [style.gridTemplateColumns]="'repeat(' + (board[0]?.length || 10) + ', 1fr)'"
+      role="grid"
+      aria-label="Tablero"
+    >
+      <!-- Línea amarilla -->
+      <div class="threshold-line" [style.top.%]="thresholdTopPercent"></div>
+
+      <ng-container *ngFor="let row of board; let y = index; trackBy: trackByRow">
+        <ng-container *ngFor="let cell of row; let x = index; trackBy: trackByCol">
+          <div
+            class="cell"
+            [class.filled]="cell.occupied"
+            [style.background-image]="getImageUrl(x, y)"
+            role="presentation"
+          ></div>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+
+  <app-hud
+  class="hud"
+  [score]="score"
+  [lives]="lives"
+  [nextPiece]="nextPiece"
+  [timeLeftMs]="timeLeftMs"
+  [canClose]="canClose"
+  (closeBox)="closeBox()"
+></app-hud>
+
+</div>
