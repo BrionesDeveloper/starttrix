@@ -15,7 +15,10 @@ export class LeaderboardComponent implements OnInit {
   top10: ScoreEntryDto[] = [];
 
   ngOnInit(): void {
-    this.leaderboardService.getTop10().subscribe(data => (this.top10 = data));
+    this.leaderboardService.getTop10().subscribe(data => {
+      this.top10 = data
+        .filter(e => (e.name || '').toLowerCase() !== 'autosave'); 
+    });
   }
 
   trackByName = (_: number, row: ScoreEntryDto) => row.name;

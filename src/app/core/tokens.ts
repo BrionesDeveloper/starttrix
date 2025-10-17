@@ -9,6 +9,7 @@ export const TICK_INTERVAL = new InjectionToken<number>('TICK_INTERVAL');
 
 
 export const THRESHOLD_ROW = new InjectionToken<number>('THRESHOLD_ROW');
+export const THRESHOLD_HEIGHT = new InjectionToken<number>('THRESHOLD_HEIGHT');
 
 export const AUTOSAVE_MS   = new InjectionToken<number>('AUTOSAVE_MS');
 

@@ -49,3 +49,17 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* src/app/features/game/game-board.component.scss */
+/* ...tus estilos previos... */
+
+.threshold-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(255, 200, 0, 0.08);
+  border-top: 2px solid #ffbf00;
+  border-bottom: 2px solid #ffbf00;
+  pointer-events: none;
+}

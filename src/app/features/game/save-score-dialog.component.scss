@@ -1,4 +1,45 @@
-.title { margin: 0 0 8px; }
-.score-form { display: grid; gap: 14px; }
+.score-dialog {
+  width: 520px;          /* tamaño amplio y consistente */
+  max-width: 90vw;
+  display: grid;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  h2 {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .points {
+    display: grid;
+    justify-items: end;
+    line-height: 1;
+    .label {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    .value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+  }
+}
+
+.score-form {
+  display: grid;
+  gap: 16px;
+}
+
 .full { width: 100%; }
-.actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

@@ -1,3 +1,4 @@
+<!-- src/app/features/game/game-board.component.html -->
 <div class="game-page">
   <div class="board-wrapper">
     <div
@@ -6,8 +7,12 @@
       role="grid"
       aria-label="Tablero"
     >
-      <!-- Línea amarilla -->
-      <div class="threshold-line" [style.top.%]="thresholdTopPercent"></div>
+      <!-- Franja amarilla de N filas -->
+      <div
+        class="threshold-band"
+        [style.top.%]="bandTopPercent"
+        [style.height.%]="bandHeightPercent">
+      </div>
 
       <ng-container *ngFor="let row of board; let y = index; trackBy: trackByRow">
         <ng-container *ngFor="let cell of row; let x = index; trackBy: trackByCol">
@@ -15,8 +20,8 @@
             class="cell"
             [class.filled]="cell.occupied"
             [style.backgroundImage]="getImageUrl(x, y)"
-            role="presentation"
-          ></div>
+            role="presentation">
+          </div>
         </ng-container>
       </ng-container>
     </div>
@@ -29,6 +34,6 @@
     [nextPiece]="nextPiece"
     [timeLeftMs]="timeLeftMs"
     [canClose]="canClose"
-    (closeBox)="closeBox()"
-  ></app-hud>
+    (closeBox)="closeBox()">
+  </app-hud>
 </div>

@@ -17,7 +17,7 @@ describe('GameEngineService', () => {
       providers: [
         GameEngineService,
         { provide: BOX_PROFILE, useValue: { width: 10, height: 20 } },
-        { provide: POINTS, useValue: { piecePlaced: 10, closeBoxBonus: 50, fullBoardMultiplier: 2 } },
+        { provide: POINTS, useValue: { piecePlaced: 10, closeBoxBonus: 50, fullBoardMultiplier: 100 } },
         { provide: TICK_INTERVAL, useValue: 1000 }
       ]
     });

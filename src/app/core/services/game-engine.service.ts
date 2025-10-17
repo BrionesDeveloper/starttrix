@@ -1,7 +1,7 @@
 // src/app/core/services/game-engine.service.ts
 import { Injectable, Inject } from '@angular/core';
 import { BehaviorSubject, Subject, interval, animationFrameScheduler, Subscription } from 'rxjs';
-import { takeWhile, tap } from 'rxjs/operators';
+import { takeWhile } from 'rxjs/operators';
 import { GameBoard, GamePiece, GameStatus, GameInput } from '../models/game.model';
 import { ProductDto } from '../models/product.model';
 import {
@@ -9,10 +9,11 @@ import {
   POINTS,
   TICK_INTERVAL,
   THRESHOLD_ROW,
+  THRESHOLD_HEIGHT,  // <<--- alto de la franja (p.ej. 4)
   AUTOSAVE_MS,
   GAME_TIME_MS,
 } from '../tokens';
-import { collides, merge as mergePiece, clearFilledRows } from '../utils/collision';
+import { collides, merge as mergePiece } from '../utils/collision';
 import { calculateScore } from '../utils/score';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScoresService } from './scores.service';
@@ -37,17 +38,16 @@ export class GameEngineService {
   private timerSub?: Subscription;
 
   constructor(
-    @Inject(BOX_PROFILE)   private box: { width: number; height: number },
-    @Inject(POINTS)        private points: { placePiece: number; closeBox: number; fullBoxMultiplier: number },
-    @Inject(TICK_INTERVAL) private tickInterval: number,
-    @Inject(THRESHOLD_ROW) private thresholdRow: number,
-    @Inject(AUTOSAVE_MS)   private autosaveMs: number,
-    @Inject(GAME_TIME_MS)  private gameTimeMs: number,
+    @Inject(BOX_PROFILE)     private box: { width: number; height: number },
+    @Inject(POINTS)          private points: { placePiece: number; closeBox: number; fullBoxMultiplier: number },
+    @Inject(TICK_INTERVAL)   private tickInterval: number,
+    @Inject(THRESHOLD_ROW)   private thresholdRow: number,     // fila inicial de la franja
+    @Inject(THRESHOLD_HEIGHT)private thresholdHeight: number,   // alto (p.ej. 4)
+    @Inject(AUTOSAVE_MS)     private autosaveMs: number,
+    @Inject(GAME_TIME_MS)    private gameTimeMs: number,
     private snackbar: MatSnackBar,
     private scores: ScoresService
-  ) {
-    this.resetBoard();
-  }
+  ) { this.resetBoard(); }
 
   // Observables para la UI
   getBoard$()       { return this.board$.asObservable(); }
@@ -96,7 +96,7 @@ export class GameEngineService {
       this.timeLeftMs$.next(Math.max(0, next));
       if (next <= 0) {
         this.status$.next(GameStatus.GameOver);
-        this.event$.next('gameOver');    // el componente abre el diálogo
+        this.event$.next('gameOver');
         this.autosaveSub?.unsubscribe();
         this.timerSub?.unsubscribe();
       }
@@ -118,7 +118,7 @@ export class GameEngineService {
 
     if (collides(this.board$.value, piece, newPos)) {
       const merged = mergePiece(this.board$.value, piece, piece.position);
-      this.board$.next(clearFilledRows(merged));
+      this.board$.next(merged);
       this.placedPieces++;
 
       // penalización si chocó en el techo
@@ -164,76 +164,83 @@ export class GameEngineService {
     return matrix[0].map((_, i) => matrix.map(row => row[i]).reverse());
   }
 
-  /** REGLAS DE CIERRE (según lo pedido):
-   *  - Solo se permite cerrar si hay piezas DEBAJO de la línea (y > thresholdRow).
-   *  - Si hay piezas EN o POR ENCIMA de la línea (y <= thresholdRow) => pierde 1 vida y NO suma.
-   *  - Bonus x2 si la LÍNEA (fila thresholdRow) está COMPLETA.
+  /** CIERRE DE CAJA con franja:
+   *  - Se permite cerrar si hay piezas DEBAJO de la franja (y > bandEnd).
+   *  - Pierde vida si hay piezas POR ENCIMA de la franja (y < bandStart).
+   *  - Bonus x2 si TODA la franja (bandStart..bandEnd) está llena.
    */
   closeBox(): void {
-    const board = this.board$.value;
-    const rows = board.length;
-    const cols = board[0]?.length ?? 0;
+  const board = this.board$.value;
+  const rows = board.length;
+  const cols = board[0]?.length ?? 0;
+  if (rows === 0 || cols === 0) return;
 
-    // 1) ¿hay algo DEBAJO de la línea?
-    const hasBelow = board
-      .slice(this.thresholdRow + 1) // filas debajo
-      .some(row => row.some(c => c.occupied));
+  const start = this.bandStart;
+  const end   = this.bandEnd;
 
-    if (!hasBelow) {
-      this.snackbar.open('⚠️ Aún no puedes cerrar: coloca piezas por DEBAJO de la línea amarilla.', 'OK', { duration: 2200 });
-      return;
-    }
+  // 1) ¿hay algo EN la franja o por debajo? (y >= start)
+  const hasInBandOrBelow = board
+    .slice(start) // desde bandStart hasta el final
+    .some(row => row.some(c => c.occupied));
 
-    // 2) ¿hay algo EN o POR ENCIMA de la línea?
-    const hasAboveOrOnLine = board
-      .slice(0, this.thresholdRow + 1) // incluye la fila de la línea
-      .some(row => row.some(c => c.occupied));
+  if (!hasInBandOrBelow) {
+    this.snackbar.open('⚠️ Aún no puedes cerrar: coloca piezas dentro de la franja amarilla.', 'OK', { duration: 2200 });
+    return;
+  }
 
-    if (hasAboveOrOnLine) {
-      this.loseLife('⚠️ Caja cerrada con piezas sobre o por encima de la línea. No cuenta puntos.');
-      if (this.lives$.value <= 0) return;
-      this.resetBoard();
-      this.placedPieces = 0;
-      this.updateCanClose();
-      this.event$.next('closeBox');
-      return;
-    }
+  // 2) ¿hay algo POR ENCIMA de la franja? (y < start)
+  const hasAbove = board
+    .slice(0, start) // estrictamente por encima
+    .some(row => row.some(c => c.occupied));
 
-    // 3) Puntuación SOLO al cerrar (x2 si la línea está llena)
-    const lineFilled = board[this.thresholdRow]?.every(c => c.occupied) ?? false;
-
-    const added = calculateScore({
-      placedPieces: this.placedPieces,
-      boxClosed: true,
-      // reutilizamos "boardFull" como bandera de multiplicador x2 para la línea llena
-      boardFull: lineFilled,
-      placePiecePoints: this.points.placePiece,
-      closeBoxPoints: this.points.closeBox,
-      fullBoxMultiplier: this.points.fullBoxMultiplier,
-    });
-
-    this.score$.next(this.score$.value + added);
-    this.snackbar.open(
-      lineFilled ? '🎉 ¡Línea completa! Bonus x2' : '📦 Caja cerrada.',
-      'OK',
-      { duration: 2300 }
-    );
-
-    this.event$.next('closeBox');
+  if (hasAbove) {
+    this.loseLife('⚠️ Caja cerrada con piezas por ENCIMA de la franja. No cuenta puntos.');
+    if (this.lives$.value <= 0) return;
     this.resetBoard();
     this.placedPieces = 0;
     this.updateCanClose();
+    this.event$.next('closeBox');
+    return;
   }
 
-  /** Habilita/deshabilita el botón cerrar según haya piezas DEBAJO de la línea */
-  private updateCanClose() {
-    const hasBelow = this.board$.value
-      .slice(this.thresholdRow + 1)
-      .some(row => row.some(c => c.occupied));
-    this.canClose$.next(hasBelow);
-  }
+  // 3) Bonus x2 si TODA la franja está completa
+  const bandFilled = board
+    .slice(start, end + 1)
+    .every(row => row.every(c => c.occupied));
 
-  /** Restar vida y terminar si llega a 0 */
+  const added = calculateScore({
+    placedPieces: this.placedPieces,
+    boxClosed: true,
+    boardFull: bandFilled, // usamos esta bandera para el multiplicador
+    placePiecePoints: this.points.placePiece,
+    closeBoxPoints: this.points.closeBox,
+    fullBoxMultiplier: this.points.fullBoxMultiplier,
+  });
+
+  this.score$.next(this.score$.value + added);
+  this.snackbar.open(
+    bandFilled ? '🎉 ¡Franja completa! Bonus x2' : '📦 Caja cerrada.',
+    'OK',
+    { duration: 2500 }
+  );
+
+  this.event$.next('closeBox');
+  this.resetBoard();
+  this.placedPieces = 0;
+  this.updateCanClose();
+}
+
+/** Habilita/deshabilita el botón cerrar:
+ *  True si hay piezas EN la franja o por DEBAJO de ella (y >= bandStart).
+ */
+private updateCanClose() {
+  const start = this.bandStart;
+  const hasInBandOrBelow = this.board$.value
+    .slice(start)
+    .some(row => row.some(c => c.occupied));
+  this.canClose$.next(hasInBandOrBelow);
+}
+
   private loseLife(message: string) {
     const remaining = this.lives$.value - 1;
     this.lives$.next(remaining);
@@ -247,15 +254,12 @@ export class GameEngineService {
     }
   }
 
-  /** Tablero vacío */
   private resetBoard(): void {
     const newBoard: GameBoard = Array.from({ length: this.box.height }, () =>
-      Array.from({ length: this.box.width }, () => ({ occupied: false }))
-    );
+      Array.from({ length: this.box.width }, () => ({ occupied: false })));
     this.board$.next(newBoard);
   }
 
-  /** Nueva pieza + "siguiente" */
   private spawnPiece(): void {
     const product = this.randomProduct();
     const shape = this.buildShapeFromFootprint(product.footprintW, product.footprintH);
@@ -293,4 +297,8 @@ export class GameEngineService {
     }
     return this.products[Math.floor(Math.random() * this.products.length)];
   }
+
+  // Helpers de franja (inicio y fin)
+  private get bandStart() { return this.thresholdRow; }
+  private get bandEnd()   { return Math.min(this.thresholdRow + this.thresholdHeight - 1, this.box.height - 1); }
 }
