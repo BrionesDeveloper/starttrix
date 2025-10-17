@@ -14,7 +14,7 @@
           <div
             class="cell"
             [class.filled]="cell.occupied"
-            [style.background-image]="getImageUrl(x, y)"
+            [style.backgroundImage]="getImageUrl(x, y)"
             role="presentation"
           ></div>
         </ng-container>
@@ -23,13 +23,12 @@
   </div>
 
   <app-hud
-  class="hud"
-  [score]="score"
-  [lives]="lives"
-  [nextPiece]="nextPiece"
-  [timeLeftMs]="timeLeftMs"
-  [canClose]="canClose"
-  (closeBox)="closeBox()"
-></app-hud>
-
+    class="hud"
+    [score]="score"
+    [lives]="lives"
+    [nextPiece]="nextPiece"
+    [timeLeftMs]="timeLeftMs"
+    [canClose]="canClose"
+    (closeBox)="closeBox()"
+  ></app-hud>
 </div>

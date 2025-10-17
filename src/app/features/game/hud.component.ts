@@ -8,15 +8,15 @@ import { MatButtonModule } from '@angular/material/button';
   selector: 'app-hud',
   imports: [CommonModule, MatButtonModule],
   templateUrl: './hud.component.html',
-  styleUrls: ['./hud.component.scss']
+  styleUrls: ['./hud.component.scss'],
 })
 export class HUDComponent {
   @Input() score = 0;
   @Input() lives = 3;
   @Input() nextPiece: GamePiece | null = null;
 
-  @Input() timeLeftMs = 0;        // << nuevo
-  @Input() canClose = false;      // << nuevo
+  @Input() timeLeftMs = 0;
+  @Input() canClose = false;
 
   @Output() closeBox = new EventEmitter<void>();
 

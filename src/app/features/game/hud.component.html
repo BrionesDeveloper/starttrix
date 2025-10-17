@@ -1,15 +1,15 @@
 <div class="hud">
   <div class="stats">
     <div class="stat">
-      <label>Puntos</label>
+      <span>Puntos</span>
       <b>{{ score }}</b>
     </div>
     <div class="stat">
-      <label>Vidas</label>
+      <span>Vidas</span>
       <b>{{ lives }}</b>
     </div>
     <div class="stat">
-      <label>Tiempo</label>
+      <span>Tiempo</span>
       <b>{{ timeLeftLabel }}</b>
     </div>
   </div>
@@ -26,8 +26,13 @@
     </div>
   </div>
 
-  <button mat-stroked-button color="warn" class="btn-close"
-          [disabled]="!canClose" (click)="closeBox.emit()">
+  <button
+    mat-stroked-button
+    color="warn"
+    class="btn-close"
+    [disabled]="!canClose"
+    (click)="closeBox.emit()"
+  >
     Cerrar caja
   </button>
 </div>
